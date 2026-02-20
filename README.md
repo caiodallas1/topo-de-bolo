@@ -1,20 +1,28 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Gerador de Topo de Bolo IA
 
-# Run and deploy your AI Studio app
+Este projeto é um gerador de topos de bolo utilizando IA (Gemini Nano Banana).
 
-This contains everything you need to run your app locally.
+## Como fazer deploy no Vercel
 
-View your app in AI Studio: https://ai.studio/apps/f781fbbd-7f51-4642-b9b1-51e244318a76
+1.  Crie um novo projeto no [Vercel](https://vercel.com).
+2.  Importe este repositório.
+3.  Nas configurações do projeto ("Project Settings"), vá em **Environment Variables**.
+4.  Adicione a seguinte variável:
+    *   **Name:** `GEMINI_API_KEY`
+    *   **Value:** Sua chave da API do Google Gemini (obtenha em [aistudio.google.com](https://aistudio.google.com/)).
+5.  Faça o deploy!
 
-## Run Locally
+## Desenvolvimento Local
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1.  Instale as dependências:
+    ```bash
+    npm install
+    ```
+2.  Crie um arquivo `.env` na raiz do projeto com sua chave da API:
+    ```env
+    GEMINI_API_KEY=sua_chave_aqui
+    ```
+3.  Inicie o servidor de desenvolvimento:
+    ```bash
+    npm run dev
+    ```

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import JSZip from 'jszip';
 import { ArrowLeft, CheckCircle2, FileArchive, Upload } from 'lucide-react';
-import { Category, DEFAULT_CATEGORIES, DEFAULT_THEMES, Theme, TopperElement } from './data/catalog';
+import { Category, DEFAULT_CATEGORIES, DEFAULT_THEMES, TextSlot, Theme, TopperElement } from './data/catalog';
 
 const CATEGORIES_KEY = 'topo-categories-v2';
 const THEMES_KEY = 'topo-themes-v2';
@@ -51,15 +51,37 @@ type ManifestElement = {
   removable?: boolean;
 };
 
+type RawTextSlot = Partial<TextSlot> & { type?: string };
+
 type Manifest = {
   version?: number;
   source?: string;
   theme: { name: string; category?: string; cover?: string };
   page?: { widthMm?: number; heightMm?: number };
-  cutline?: { whiteMarginMm?: number; lineWidthMm?: number; color?: string };
   elements?: ManifestElement[];
-  textSlots?: Theme['textSlots'];
+  textSlots?: RawTextSlot[];
 };
+
+function normalizeSlot(raw: RawTextSlot): TextSlot | null {
+  const token = String(raw.type || '').trim().toLowerCase();
+  const type = token === 'name' || token === '@nome' ? 'name' : token === 'age' || token === '@idade' ? 'age' : null;
+  if (!type) return null;
+
+  return {
+    type,
+    xMm: Number(raw.xMm) || 0,
+    yMm: Number(raw.yMm) || 0,
+    widthMm: Number(raw.widthMm) || 40,
+    heightMm: Number(raw.heightMm) || 12,
+    fontFamily: raw.fontFamily || 'Arial',
+    fontSizePt: Number(raw.fontSizePt) || 36,
+    fill: raw.fill || '#111111',
+    stroke: raw.stroke || '',
+    strokeWidthMm: Number(raw.strokeWidthMm) || 0,
+    shadowColor: raw.shadowColor,
+    shadowOffsetMm: raw.shadowOffsetMm,
+  };
+}
 
 export default function ImportCorelNext() {
   const [categories] = useState<Category[]>(() => readLocal(CATEGORIES_KEY, DEFAULT_CATEGORIES));
@@ -119,6 +141,8 @@ export default function ImportCorelNext() {
         });
       }
 
+      const textSlots = (manifest.textSlots || []).map(normalizeSlot).filter((slot): slot is TextSlot => Boolean(slot));
+
       let coverImage: string | undefined;
       if (manifest.theme.cover) {
         const cover = resolveZipEntry(manifest.theme.cover);
@@ -137,7 +161,7 @@ export default function ImportCorelNext() {
         description: `Importado do CorelDRAW • ${elements.length} elementos`,
         coverImage,
         elements,
-        textSlots: (manifest.textSlots || []).map((slot) => ({ ...slot })),
+        textSlots,
         cutline: undefined,
         pageWidthMm: manifest.page?.widthMm || 210,
         pageHeightMm: manifest.page?.heightMm || 297,
@@ -148,7 +172,10 @@ export default function ImportCorelNext() {
       setThemes(nextThemes);
       localStorage.setItem(THEMES_KEY, JSON.stringify(nextThemes));
       setLastTheme(imported);
-      setStatus('Tema importado com sucesso.');
+
+      const names = textSlots.filter((slot) => slot.type === 'name').length;
+      const ages = textSlots.filter((slot) => slot.type === 'age').length;
+      setStatus(`Tema importado. Campos editáveis detectados: ${names} nome, ${ages} idade.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Não foi possível importar o pacote.');
     } finally {
@@ -169,7 +196,7 @@ export default function ImportCorelNext() {
         <section className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600"><FileArchive size={29}/></div>
-            <div><p className="text-sm font-black uppercase tracking-wider text-red-600">Importação rápida</p><h1 className="mt-1 text-3xl font-black">Importar tema do Corel</h1><p className="mt-2 max-w-2xl text-zinc-600">Primeiro escolha onde o tema deve aparecer. A categoria escrita no arquivo do Corel não cria mais categoria automaticamente.</p></div>
+            <div><p className="text-sm font-black uppercase tracking-wider text-red-600">Importação rápida</p><h1 className="mt-1 text-3xl font-black">Importar tema do Corel</h1><p className="mt-2 max-w-2xl text-zinc-600">Escolha a categoria e importe o ZIP. O Topo Express v3.1 reconhece @NOME/@IDADE escritos no Corel ou usados como nome do objeto.</p></div>
           </div>
 
           <label className="mt-7 block text-sm font-black">Categoria do tema</label>
@@ -193,12 +220,6 @@ export default function ImportCorelNext() {
             </div>
           )}
         </section>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl bg-white p-5 shadow-sm"><p className="text-2xl font-black">{themeCount}</p><p className="text-sm font-semibold text-zinc-500">temas cadastrados</p></div>
-          <div className="rounded-2xl bg-white p-5 shadow-sm"><p className="text-2xl font-black">{categories.length}</p><p className="text-sm font-semibold text-zinc-500">categorias existentes</p></div>
-          <div className="rounded-2xl bg-white p-5 shadow-sm"><p className="text-2xl font-black">SEM</p><p className="text-sm font-semibold text-zinc-500">contorno automático no site</p></div>
-        </div>
       </main>
     </div>
   );

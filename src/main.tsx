@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import ClientClassicFixed from './ClientClassicFixed.tsx';
+import ClientClassicV3 from './ClientClassicV3.tsx';
 import ImportCorelNext from './ImportCorelNext.tsx';
 import FontsClassic from './FontsClassic.tsx';
 import { installThemeStorageShim } from './services/themeStorage';
@@ -44,7 +44,7 @@ async function bootstrap() {
           </div>
         </>
       ) : (
-        <ClientClassicFixed />
+        <ClientClassicV3 />
       )}
     </StrictMode>,
   );

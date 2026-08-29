@@ -1,9 +1,9 @@
-const THEME_KEY = 'topo-themes-v2';
+const HEAVY_KEYS = new Set(['topo-themes-v2', 'topo-fonts-v1']);
 const DB_NAME = 'topo-express-db';
 const STORE_NAME = 'kv';
 const DB_VERSION = 1;
 
-let themeCache: string | null = null;
+const cache = new Map<string, string | null>();
 let installed = false;
 
 const nativeGetItem = Storage.prototype.getItem;
@@ -57,41 +57,41 @@ async function idbRemove(key: string): Promise<void> {
 export async function installThemeStorageShim() {
   if (installed) return;
 
-  const legacy = nativeGetItem.call(localStorage, THEME_KEY);
-  let stored: string | null = null;
-
-  try {
-    stored = await idbGet(THEME_KEY);
-  } catch (error) {
-    console.warn('Topo Express: IndexedDB indisponível ao iniciar.', error);
-  }
-
-  themeCache = stored ?? legacy;
-
-  if (!stored && legacy) {
+  for (const key of HEAVY_KEYS) {
+    const legacy = nativeGetItem.call(localStorage, key);
+    let stored: string | null = null;
     try {
-      await idbSet(THEME_KEY, legacy);
+      stored = await idbGet(key);
     } catch (error) {
-      console.warn('Topo Express: não foi possível migrar temas antigos.', error);
+      console.warn(`Topo Express: IndexedDB indisponível para ${key}.`, error);
+    }
+
+    cache.set(key, stored ?? legacy);
+
+    if (!stored && legacy) {
+      try {
+        await idbSet(key, legacy);
+      } catch (error) {
+        console.warn(`Topo Express: não foi possível migrar ${key}.`, error);
+      }
+    }
+
+    if (legacy) {
+      try { nativeRemoveItem.call(localStorage, key); } catch {}
     }
   }
 
-  if (legacy) {
-    try {
-      nativeRemoveItem.call(localStorage, THEME_KEY);
-    } catch {}
-  }
-
   Storage.prototype.getItem = function (key: string) {
-    if (this === localStorage && key === THEME_KEY) return themeCache;
+    if (this === localStorage && HEAVY_KEYS.has(key)) return cache.get(key) ?? null;
     return nativeGetItem.call(this, key);
   };
 
   Storage.prototype.setItem = function (key: string, value: string) {
-    if (this === localStorage && key === THEME_KEY) {
-      themeCache = String(value);
-      void idbSet(THEME_KEY, themeCache).catch((error) => {
-        console.error('Topo Express: falha ao salvar catálogo grande no IndexedDB.', error);
+    if (this === localStorage && HEAVY_KEYS.has(key)) {
+      const next = String(value);
+      cache.set(key, next);
+      void idbSet(key, next).catch((error) => {
+        console.error(`Topo Express: falha ao salvar ${key} no IndexedDB.`, error);
       });
       return;
     }
@@ -99,9 +99,9 @@ export async function installThemeStorageShim() {
   };
 
   Storage.prototype.removeItem = function (key: string) {
-    if (this === localStorage && key === THEME_KEY) {
-      themeCache = null;
-      void idbRemove(THEME_KEY).catch(console.error);
+    if (this === localStorage && HEAVY_KEYS.has(key)) {
+      cache.set(key, null);
+      void idbRemove(key).catch(console.error);
       return;
     }
     return nativeRemoveItem.call(this, key);

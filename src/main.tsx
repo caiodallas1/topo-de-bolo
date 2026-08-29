@@ -4,12 +4,18 @@ import App from './App.tsx';
 import ImportCorel from './ImportCorel.tsx';
 import './index.css';
 
-// Corel/ADODB pode salvar JSON UTF-8 com BOM. Limpamos esse caractere
-// invisível antes de qualquer JSON.parse para aceitar pacotes já exportados.
+// Alguns Corel/ADODB salvam JSON com BOM e, dependendo da configuracao
+// regional do Windows/VBA, podem gerar numeros como 210. antes de uma
+// virgula/chave. Limpamos esses dois casos para aceitar inclusive packs ja
+// exportados pelo macro antigo.
 const nativeJsonParse = JSON.parse.bind(JSON);
 JSON.parse = ((text: string, reviver?: (this: any, key: string, value: any) => any) => {
   const clean = typeof text === 'string'
-    ? text.replace(/^\uFEFF/, '').replace(/^ï»¿/, '').trimStart()
+    ? text
+        .replace(/^\uFEFF/, '')
+        .replace(/^ï»¿/, '')
+        .trimStart()
+        .replace(/(-?\d+)\.(?=\s*[,}\]])/g, '$1')
     : text;
   return nativeJsonParse(clean, reviver);
 }) as typeof JSON.parse;

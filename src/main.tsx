@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import ImportPackage from './ImportPackage.tsx';
+import ImportCorel from './ImportCorel.tsx';
 import './index.css';
 
 window.addEventListener('hashchange', () => window.location.reload());
@@ -13,7 +13,7 @@ const isAdmin = hash.startsWith('#/admin');
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {isImporter ? (
-      <ImportPackage />
+      <ImportCorel />
     ) : (
       <>
         <App />

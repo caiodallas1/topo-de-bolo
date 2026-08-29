@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import ClientClassicFixed from './ClientClassicFixed.tsx';
 import ImportCorelNext from './ImportCorelNext.tsx';
+import FontsClassic from './FontsClassic.tsx';
 import { installThemeStorageShim } from './services/themeStorage';
 import './index.css';
 
@@ -25,21 +26,22 @@ async function bootstrap() {
 
   const hash = window.location.hash;
   const isImporter = hash.startsWith('#/importar');
+  const isFonts = hash.startsWith('#/fontes');
   const isAdmin = hash.startsWith('#/admin');
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       {isImporter ? (
         <ImportCorelNext />
+      ) : isFonts ? (
+        <FontsClassic />
       ) : isAdmin ? (
         <>
           <App />
-          <a
-            href="#/importar"
-            className="fixed bottom-5 right-5 z-[9999] rounded-2xl bg-red-600 px-5 py-3 font-black text-white shadow-2xl shadow-red-300 hover:bg-red-700"
-          >
-            Importar pacote Corel
-          </a>
+          <div className="fixed bottom-5 right-5 z-[9999] flex gap-2">
+            <a href="#/fontes" className="rounded-2xl bg-zinc-900 px-5 py-3 font-black text-white shadow-2xl">Fontes</a>
+            <a href="#/importar" className="rounded-2xl bg-red-600 px-5 py-3 font-black text-white shadow-2xl shadow-red-300 hover:bg-red-700">Importar pacote Corel</a>
+          </div>
         </>
       ) : (
         <ClientClassicFixed />

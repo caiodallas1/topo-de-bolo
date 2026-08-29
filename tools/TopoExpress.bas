@@ -3,6 +3,11 @@ Option Explicit
 
 ' Topo Express - Exportador de tema para CorelDRAW
 ' Execute ExportarTopoExpress.
+'
+' Campos editaveis:
+' - Basta DIGITAR @NOME ou @IDADE em um objeto de texto.
+' - Tambem continua aceitando objetos cujo Name seja @NOME / @IDADE.
+' - Esses objetos NAO viram PNG: viram slots editaveis no site.
 
 Private Const DPI_EXPORT As Long = 300
 Private Const DPI_CAPA As Long = 120
@@ -41,10 +46,13 @@ Public Sub ExportarTopoExpress()
     For i = 1 To pg.Shapes.Count
         Dim shp As Shape: Set shp = pg.Shapes(i)
         If EhObjetoIgnorado(shp) Then GoTo prox
+
         Dim nm As String: nm = Trim(shp.Name)
-        If UCase(nm) = "@NOME" Or UCase(nm) = "@IDADE" Then
+        Dim marcador As String: marcador = MarcadorTexto(shp)
+
+        If marcador = "@NOME" Or marcador = "@IDADE" Then
             If textJson <> "" Then textJson = textJson & "," & vbCrLf
-            textJson = textJson & TextoSlotJson(shp, IIf(UCase(nm) = "@NOME", "name", "age"), pageH)
+            textJson = textJson & TextoSlotJson(shp, IIf(marcador = "@NOME", "name", "age"), pageH)
         Else
             n = n + 1
             If nm = "" Then nm = "elemento_" & Format(n, "000")
@@ -58,7 +66,7 @@ prox:
 
     Dim json As String
     json = "{" & vbCrLf & _
-      "  ""version"": 2," & vbCrLf & _
+      "  ""version"": 3," & vbCrLf & _
       "  ""source"": ""CorelDRAW TopoExpress.bas""," & vbCrLf & _
       "  ""theme"": {""name"": """ & JsonEscape(tema) & """, ""category"": """ & JsonEscape(categoria) & """, ""cover"": ""capa.png""}," & vbCrLf & _
       "  ""page"": {""widthMm"": " & JsonNum(pageW) & ", ""heightMm"": " & JsonNum(pageH) & "}," & vbCrLf & _
@@ -78,6 +86,32 @@ TrataErro:
     doc.ReferencePoint = oldRef: doc.Unit = oldUnit
     MsgBox "Erro: " & Err.Number & " - " & Err.Description, vbCritical, "Topo Express"
 End Sub
+
+' Detecta primeiro pelo nome interno do objeto e depois pelo CONTEUDO do texto.
+' Assim o usuario pode simplesmente escrever @NOME / @IDADE no Corel.
+Private Function MarcadorTexto(ByVal shp As Shape) As String
+    On Error Resume Next
+
+    Dim valor As String
+    valor = UCase$(Trim$(shp.Name))
+    If valor = "@NOME" Or valor = "@IDADE" Then
+        MarcadorTexto = valor
+        Exit Function
+    End If
+
+    If shp.Type = cdrTextShape Then
+        valor = UCase$(Trim$(shp.Text.Story.Text))
+        valor = Replace(valor, vbCr, "")
+        valor = Replace(valor, vbLf, "")
+        valor = Trim$(valor)
+        If valor = "@NOME" Or valor = "@IDADE" Then
+            MarcadorTexto = valor
+            Exit Function
+        End If
+    End If
+
+    MarcadorTexto = ""
+End Function
 
 Private Function EhObjetoIgnorado(ByVal shp As Shape) As Boolean
     On Error Resume Next
@@ -112,9 +146,13 @@ End Function
 Private Function TextoSlotJson(ByVal shp As Shape, ByVal typ As String, ByVal ph As Double) As String
     Dim f As String, sz As Double: f = "Arial": sz = 36
     On Error Resume Next
-    If shp.Type = cdrTextShape Then f = shp.Text.Story.Font: sz = shp.Text.Story.Size
+    If shp.Type = cdrTextShape Then
+        f = shp.Text.Story.Font
+        sz = shp.Text.Story.Size
+    End If
     On Error GoTo 0
-    TextoSlotJson = "    {""type"": """ & typ & """, ""xMm"": " & JsonNum(shp.LeftX) & ", ""yMm"": " & JsonNum(ph - shp.TopY) & ", ""widthMm"": " & JsonNum(shp.SizeWidth) & ", ""heightMm"": " & JsonNum(shp.SizeHeight) & ", ""fontFamily"": """ & JsonEscape(f) & """, ""fontSizePt"": " & JsonNum(sz) & ", ""fill"": ""#111111"", ""stroke"": ""#FFFFFF"", ""strokeWidthMm"": 0.8}"
+
+    TextoSlotJson = "    {""type"": """ & typ & """, ""xMm"": " & JsonNum(shp.LeftX) & ", ""yMm"": " & JsonNum(ph - shp.TopY) & ", ""widthMm"": " & JsonNum(shp.SizeWidth) & ", ""heightMm"": " & JsonNum(shp.SizeHeight) & ", ""fontFamily"": """ & JsonEscape(f) & """, ""fontSizePt"": " & JsonNum(sz) & ", ""fill"": ""#111111""}"
 End Function
 
 Private Function CriarZipPowerShell(ByVal pasta As String, ByVal zipPath As String) As Boolean
@@ -161,7 +199,6 @@ Private Function JsonEscape(ByVal s As String) As String
 End Function
 
 Private Function JsonNum(ByVal n As Double) As String
-    ' Str$ usa ponto como separador decimal independentemente do Windows.
     JsonNum = Trim$(Str$(Round(n, 3)))
 End Function
 

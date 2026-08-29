@@ -1,4 +1,4 @@
-const HEAVY_KEYS = new Set(['topo-themes-v2', 'topo-fonts-v1']);
+const HEAVY_KEYS = new Set(['topo-themes-v2', 'topo-fonts-v1', 'topo-orders-v2']);
 const DB_NAME = 'topo-express-db';
 const STORE_NAME = 'kv';
 const DB_VERSION = 1;

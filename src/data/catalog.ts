@@ -11,6 +11,7 @@ export type TopperElement = {
   xMm: number;
   yMm: number;
   widthMm: number;
+  aspect?: number;
 };
 
 export type Theme = {
@@ -51,14 +52,7 @@ export const DEFAULT_THEMES: Theme[] = [
   { id: 'borboletas', name: 'Borboletas', categoryId: 'feminino', emoji: '🦋', description: 'Leve, delicado e colorido', elements: [] },
   { id: 'fazendinha', name: 'Fazendinha', categoryId: 'infantil', emoji: '🐮', description: 'Animais e clima de fazenda', elements: [] },
   { id: 'festa-colorida', name: 'Festa Colorida', categoryId: 'adulto', emoji: '🎈', description: 'Balões, confetes e alegria', elements: [] },
-  {
-    id: 'bluey-teste',
-    name: 'Bluey - teste',
-    categoryId: 'infantil',
-    emoji: '🐶',
-    description: 'Tema de teste para cadastrar PNGs',
-    elements: [],
-  },
+  { id: 'bluey-teste', name: 'Bluey - teste', categoryId: 'infantil', emoji: '🐶', description: 'Cadastre seus PNGs no admin', elements: [] },
 ];
 
 export const FONT_OPTIONS = [

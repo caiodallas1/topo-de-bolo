@@ -1,67 +1,59 @@
-export type TopperModel = {
+export type TopperElement = {
   id: string;
   name: string;
-  /** Arte A4 pronta (210x297mm). Coloque o arquivo em public/temas/<tema>/ */
-  preview: string;
-  /** Posição do nome dentro da folha A4, em percentual */
-  namePosition?: { x: number; y: number; width: number; fontSize: number; color?: string };
-  /** Posição da idade dentro da folha A4, em percentual */
-  agePosition?: { x: number; y: number; width: number; fontSize: number; color?: string };
+  src: string;
+  x: number; // % da largura A4
+  y: number; // % da altura A4
+  widthCm: number;
 };
 
 export type Theme = {
   id: string;
   name: string;
-  thumbnail?: string;
   emoji?: string;
   description: string;
-  models: TopperModel[];
+  elements: TopperElement[];
 };
+
+export const fontOptions = [
+  { label: 'Arial', value: 'Arial, sans-serif' },
+  { label: 'Arial Black', value: 'Arial Black, Arial, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Trebuchet', value: 'Trebuchet MS, sans-serif' },
+  { label: 'Comic', value: 'Comic Sans MS, cursive' },
+];
 
 /**
  * COMO CADASTRAR UM TEMA
- * 1. Crie uma pasta: public/temas/nome-do-tema/
- * 2. Coloque nela os A4 prontos: modelo-01.png, modelo-02.png...
- * 3. Adicione o tema abaixo e informe o caminho de cada arquivo.
+ * 1) Exporte cada elemento do Corel como PNG transparente.
+ * 2) Crie a pasta public/temas/<tema>/
+ * 3) Suba os PNGs nessa pasta.
+ * 4) Cadastre abaixo o caminho e o tamanho inicial em centímetros.
  *
- * Recomendação: exporte os A4 em 2480x3508px (A4 a 300 DPI).
+ * Dica: NÃO exporte a folha A4 inteira. Exporte personagem, enfeites e demais
+ * elementos separadamente. Assim eles ficam soltos e podem ser movidos/redimensionados.
  */
 export const themes: Theme[] = [
+  {
+    id: 'bluey',
+    name: 'Bluey',
+    emoji: '🐾',
+    description: 'Tema de teste',
+    elements: [
+      { id: 'bluey-personagem', name: 'Personagem principal', src: '/temas/bluey/personagem-01.png', x: 8, y: 8, widthCm: 7 },
+      { id: 'bluey-personagem-2', name: 'Personagem 02', src: '/temas/bluey/personagem-02.png', x: 55, y: 8, widthCm: 6 },
+      { id: 'bluey-casa', name: 'Casa / cenário', src: '/temas/bluey/cenario-01.png', x: 27, y: 38, widthCm: 9 },
+      { id: 'bluey-enfeite', name: 'Enfeite', src: '/temas/bluey/enfeite-01.png', x: 8, y: 70, widthCm: 5 },
+    ],
+  },
   {
     id: 'futebol',
     name: 'Futebol',
     emoji: '⚽',
-    description: 'Futebol e comemoração',
-    models: [
-      {
-        id: 'futebol-01',
-        name: 'Modelo 01',
-        preview: '/temas/futebol/modelo-01.png',
-        namePosition: { x: 25, y: 72, width: 50, fontSize: 4.2, color: '#111111' },
-        agePosition: { x: 35, y: 80, width: 30, fontSize: 3.6, color: '#111111' },
-      },
-      {
-        id: 'futebol-02',
-        name: 'Modelo 02',
-        preview: '/temas/futebol/modelo-02.png',
-        namePosition: { x: 20, y: 70, width: 60, fontSize: 4.2, color: '#111111' },
-        agePosition: { x: 35, y: 79, width: 30, fontSize: 3.6, color: '#111111' },
-      },
-    ],
-  },
-  {
-    id: 'princesa',
-    name: 'Princesa',
-    emoji: '👑',
-    description: 'Coroas, brilho e festa',
-    models: [
-      {
-        id: 'princesa-01',
-        name: 'Modelo 01',
-        preview: '/temas/princesa/modelo-01.png',
-        namePosition: { x: 20, y: 72, width: 60, fontSize: 4.2, color: '#111111' },
-        agePosition: { x: 35, y: 80, width: 30, fontSize: 3.6, color: '#111111' },
-      },
+    description: 'Tema genérico de futebol',
+    elements: [
+      { id: 'bola', name: 'Bola', src: '/temas/futebol/bola.png', x: 8, y: 8, widthCm: 5 },
+      { id: 'trofeu', name: 'Troféu', src: '/temas/futebol/trofeu.png', x: 62, y: 10, widthCm: 5 },
     ],
   },
 ];

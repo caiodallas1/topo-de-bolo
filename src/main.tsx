@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import AppNext from './AppNext.tsx';
+import App from './App.tsx';
 import ImportCorelNext from './ImportCorelNext.tsx';
 import { installThemeStorageShim } from './services/themeStorage';
 import './index.css';
@@ -33,7 +33,7 @@ async function bootstrap() {
         <ImportCorelNext />
       ) : (
         <>
-          <AppNext />
+          <App />
           {isAdmin && (
             <a
               href="#/importar"

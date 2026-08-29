@@ -1,14 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import ImportCorel from './ImportCorel.tsx';
+import AppNext from './AppNext.tsx';
+import ImportCorelNext from './ImportCorelNext.tsx';
 import { installThemeStorageShim } from './services/themeStorage';
 import './index.css';
 
-// Alguns Corel/ADODB salvam JSON com BOM e, dependendo da configuracao
-// regional do Windows/VBA, podem gerar numeros como 210. antes de uma
-// virgula/chave. Limpamos esses dois casos para aceitar inclusive packs ja
-// exportados pelo macro antigo.
+// Aceita packs antigos do Corel com BOM e alguns números serializados como 210.
 const nativeJsonParse = JSON.parse.bind(JSON);
 JSON.parse = ((text: string, reviver?: (this: any, key: string, value: any) => any) => {
   const clean = typeof text === 'string'
@@ -24,9 +21,6 @@ JSON.parse = ((text: string, reviver?: (this: any, key: string, value: any) => a
 window.addEventListener('hashchange', () => window.location.reload());
 
 async function bootstrap() {
-  // Temas podem carregar muitos PNGs. Antes de montar o React, desviamos
-  // topo-themes-v2 do localStorage para IndexedDB, mantendo a mesma API para
-  // o restante do app e migrando automaticamente dados antigos.
   await installThemeStorageShim();
 
   const hash = window.location.hash;
@@ -36,10 +30,10 @@ async function bootstrap() {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       {isImporter ? (
-        <ImportCorel />
+        <ImportCorelNext />
       ) : (
         <>
-          <App />
+          <AppNext />
           {isAdmin && (
             <a
               href="#/importar"

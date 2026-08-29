@@ -4,6 +4,27 @@ export type Category = {
   image?: string;
 };
 
+export type TextSlot = {
+  type: 'name' | 'age';
+  xMm: number;
+  yMm: number;
+  widthMm: number;
+  heightMm: number;
+  fontFamily?: string;
+  fontSizePt?: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidthMm?: number;
+  shadowColor?: string;
+  shadowOffsetMm?: number;
+};
+
+export type CutlineSettings = {
+  whiteMarginMm: number;
+  lineWidthMm: number;
+  color: string;
+};
+
 export type TopperElement = {
   id: string;
   name: string;
@@ -12,6 +33,11 @@ export type TopperElement = {
   yMm: number;
   widthMm: number;
   aspect?: number;
+  minWidthMm?: number;
+  maxWidthMm?: number;
+  movable?: boolean;
+  resizable?: boolean;
+  removable?: boolean;
 };
 
 export type Theme = {
@@ -22,6 +48,11 @@ export type Theme = {
   coverImage?: string;
   emoji?: string;
   elements: TopperElement[];
+  textSlots?: TextSlot[];
+  cutline?: CutlineSettings;
+  pageWidthMm?: number;
+  pageHeightMm?: number;
+  source?: 'manual' | 'corel';
 };
 
 export type TopperOrder = {
@@ -34,6 +65,8 @@ export type TopperOrder = {
   age: string;
   fontFamily: string;
   elements: TopperElement[];
+  textSlots?: TextSlot[];
+  cutline?: CutlineSettings;
 };
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -44,15 +77,15 @@ export const DEFAULT_CATEGORIES: Category[] = [
 ];
 
 export const DEFAULT_THEMES: Theme[] = [
-  { id: 'princesa', name: 'Princesa', categoryId: 'feminino', emoji: '👑', description: 'Rosa, coroas e brilho', elements: [] },
-  { id: 'futebol', name: 'Futebol', categoryId: 'futebol', emoji: '⚽', description: 'Campo, bola e comemoração', elements: [] },
-  { id: 'safari', name: 'Safari', categoryId: 'infantil', emoji: '🦁', description: 'Bichinhos e natureza', elements: [] },
-  { id: 'dinossauro', name: 'Dinossauro', categoryId: 'infantil', emoji: '🦖', description: 'Dinos e aventura', elements: [] },
-  { id: 'astronauta', name: 'Astronauta', categoryId: 'infantil', emoji: '🚀', description: 'Espaço, estrelas e foguetes', elements: [] },
-  { id: 'borboletas', name: 'Borboletas', categoryId: 'feminino', emoji: '🦋', description: 'Leve, delicado e colorido', elements: [] },
-  { id: 'fazendinha', name: 'Fazendinha', categoryId: 'infantil', emoji: '🐮', description: 'Animais e clima de fazenda', elements: [] },
-  { id: 'festa-colorida', name: 'Festa Colorida', categoryId: 'adulto', emoji: '🎈', description: 'Balões, confetes e alegria', elements: [] },
-  { id: 'bluey-teste', name: 'Bluey - teste', categoryId: 'infantil', emoji: '🐶', description: 'Cadastre seus PNGs no admin', elements: [] },
+  { id: 'princesa', name: 'Princesa', categoryId: 'feminino', emoji: '👑', description: 'Rosa, coroas e brilho', elements: [], source: 'manual' },
+  { id: 'futebol', name: 'Futebol', categoryId: 'futebol', emoji: '⚽', description: 'Campo, bola e comemoração', elements: [], source: 'manual' },
+  { id: 'safari', name: 'Safari', categoryId: 'infantil', emoji: '🦁', description: 'Bichinhos e natureza', elements: [], source: 'manual' },
+  { id: 'dinossauro', name: 'Dinossauro', categoryId: 'infantil', emoji: '🦖', description: 'Dinos e aventura', elements: [], source: 'manual' },
+  { id: 'astronauta', name: 'Astronauta', categoryId: 'infantil', emoji: '🚀', description: 'Espaço, estrelas e foguetes', elements: [], source: 'manual' },
+  { id: 'borboletas', name: 'Borboletas', categoryId: 'feminino', emoji: '🦋', description: 'Leve, delicado e colorido', elements: [], source: 'manual' },
+  { id: 'fazendinha', name: 'Fazendinha', categoryId: 'infantil', emoji: '🐮', description: 'Animais e clima de fazenda', elements: [], source: 'manual' },
+  { id: 'festa-colorida', name: 'Festa Colorida', categoryId: 'adulto', emoji: '🎈', description: 'Balões, confetes e alegria', elements: [], source: 'manual' },
+  { id: 'bluey-teste', name: 'Bluey - teste', categoryId: 'infantil', emoji: '🐶', description: 'Cadastre seus PNGs no admin', elements: [], source: 'manual' },
 ];
 
 export const FONT_OPTIONS = [

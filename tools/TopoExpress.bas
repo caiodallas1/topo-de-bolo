@@ -2,8 +2,7 @@ Attribute VB_Name = "TopoExpress"
 Option Explicit
 
 ' Topo Express - Exportador de tema para CorelDRAW
-' A versão completa para download foi gerada na conversa. Este arquivo fica
-' versionado no projeto para instalação no Corel. Execute ExportarTopoExpress.
+' Execute ExportarTopoExpress.
 
 Private Const DPI_EXPORT As Long = 300
 Private Const DPI_CAPA As Long = 120
@@ -59,15 +58,17 @@ prox:
 
     Dim json As String
     json = "{" & vbCrLf & _
-      "  ""version"": 1," & vbCrLf & _
+      "  ""version"": 2," & vbCrLf & _
       "  ""source"": ""CorelDRAW TopoExpress.bas""," & vbCrLf & _
       "  ""theme"": {""name"": """ & JsonEscape(tema) & """, ""category"": """ & JsonEscape(categoria) & """, ""cover"": ""capa.png""}," & vbCrLf & _
       "  ""page"": {""widthMm"": " & JsonNum(pageW) & ", ""heightMm"": " & JsonNum(pageH) & "}," & vbCrLf & _
-      "  ""cutline"": {""whiteMarginMm"": 1.5, ""lineWidthMm"": 0.2, ""color"": ""#9CA3AF""}," & vbCrLf & _
+      "  ""cutline"": {""whiteMarginMm"": " & JsonNum(DEFAULT_WHITE_MARGIN_MM) & ", ""lineWidthMm"": " & JsonNum(DEFAULT_CUTLINE_MM) & ", ""color"": ""#9CA3AF""}," & vbCrLf & _
       "  ""elements"": [" & vbCrLf & elementsJson & vbCrLf & "  ]," & vbCrLf & _
       "  ""textSlots"": [" & vbCrLf & textJson & vbCrLf & "  ]" & vbCrLf & "}"
-    SalvarTextoUTF8 pasta & "\manifest.json", json
+
+    SalvarTextoUTF8SemBOM pasta & "\manifest.json", json
     doc.ReferencePoint = oldRef: doc.Unit = oldUnit
+
     Dim zipPath As String: zipPath = base & "\" & slug & "_TopoExpress.zip"
     Call CriarZipPowerShell(pasta, zipPath)
     MsgBox "Pacote criado!" & vbCrLf & pasta & vbCrLf & zipPath, vbInformation, "Topo Express"
@@ -134,21 +135,46 @@ Private Function EscolherPasta() As String
 fb: EscolherPasta = Environ$("USERPROFILE") & "\Desktop"
 End Function
 
-Private Sub CriarPastaSeNaoExiste(ByVal p As String): If Dir(p, vbDirectory) = "" Then MkDir p
+Private Sub CriarPastaSeNaoExiste(ByVal p As String)
+    If Dir(p, vbDirectory) = "" Then MkDir p
 End Sub
-Private Sub SalvarTextoUTF8(ByVal p As String, ByVal txt As String)
-    Dim s As Object: Set s = CreateObject("ADODB.Stream"): s.Type = 2: s.Charset = "utf-8": s.Open: s.WriteText txt: s.SaveToFile p, 2: s.Close
+
+Private Sub SalvarTextoUTF8SemBOM(ByVal caminho As String, ByVal conteudo As String)
+    Dim txt As Object, bin As Object
+    Set txt = CreateObject("ADODB.Stream")
+    txt.Type = 2: txt.Charset = "utf-8": txt.Open
+    txt.WriteText conteudo
+    txt.Position = 3
+    txt.Type = 1
+
+    Set bin = CreateObject("ADODB.Stream")
+    bin.Type = 1: bin.Open
+    bin.Write txt.Read
+    bin.SaveToFile caminho, 2
+    bin.Close: txt.Close
 End Sub
+
 Private Function JsonEscape(ByVal s As String) As String
-    s = Replace(s, "\", "\\"): s = Replace(s, """", "\"""): s = Replace(s, vbCrLf, "\n"): JsonEscape = s
+    s = Replace(s, "\", "\\"): s = Replace(s, """", "\""")
+    s = Replace(s, vbCrLf, "\n"): s = Replace(s, vbCr, "\n"): s = Replace(s, vbLf, "\n")
+    JsonEscape = s
 End Function
-Private Function JsonNum(ByVal n As Double) As String: JsonNum = Replace(Format(n, "0.###"), ",", "."): End Function
+
+Private Function JsonNum(ByVal n As Double) As String
+    ' Str$ usa ponto como separador decimal independentemente do Windows.
+    JsonNum = Trim$(Str$(Round(n, 3)))
+End Function
+
 Private Function SanitizarNomeArquivo(ByVal s As String) As String
     Dim a As Variant, v As Variant: a = Array("\", "/", ":", "*", "?", """", "<", ">", "|")
     For Each v In a: s = Replace(s, CStr(v), "_"): Next v
     s = Replace(Trim(s), " ", "_"): If s = "" Then s = "tema": SanitizarNomeArquivo = s
 End Function
+
 Private Function NomeDocumentoSemExtensao(ByVal s As String) As String
     Dim p As Long: p = InStrRev(s, "."): If p > 1 Then NomeDocumentoSemExtensao = Left(s, p - 1) Else NomeDocumentoSemExtensao = s
 End Function
-Private Function PsEscape(ByVal s As String) As String: PsEscape = Replace(s, "'", "''"): End Function
+
+Private Function PsEscape(ByVal s As String) As String
+    PsEscape = Replace(s, "'", "''")
+End Function

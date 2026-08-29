@@ -4,6 +4,16 @@ import App from './App.tsx';
 import ImportCorel from './ImportCorel.tsx';
 import './index.css';
 
+// Corel/ADODB pode salvar JSON UTF-8 com BOM. Limpamos esse caractere
+// invisível antes de qualquer JSON.parse para aceitar pacotes já exportados.
+const nativeJsonParse = JSON.parse.bind(JSON);
+JSON.parse = ((text: string, reviver?: (this: any, key: string, value: any) => any) => {
+  const clean = typeof text === 'string'
+    ? text.replace(/^\uFEFF/, '').replace(/^ï»¿/, '').trimStart()
+    : text;
+  return nativeJsonParse(clean, reviver);
+}) as typeof JSON.parse;
+
 window.addEventListener('hashchange', () => window.location.reload());
 
 const hash = window.location.hash;
